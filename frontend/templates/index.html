@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoanFlow AI | Multi-Agent Underwriting Platform (ADK 2.x & A2UI)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <!-- TOP NAVIGATION BAR -->
+    <header class="app-header glassmorphism">
+        <div class="header-left">
+            <div class="logo-mark">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">LoanFlow<strong>AI</strong></span>
+            </div>
+            <span class="system-badge">Google Cloud ADK 2.x</span>
+            <span class="system-badge a2ui">A2UI 0.9 Protocol</span>
+        </div>
+        <div class="header-center">
+            <div class="scenario-selector-wrapper">
+                <label for="scenarioSelect">Loan Scenario:</label>
+                <select id="scenarioSelect" class="styled-select">
+                    <option value="APP-CONV-2026">Conventional Purchase - Elena Rostova ($544k / FICO 765)</option>
+                    <option value="APP-JUMBO-2026">Jumbo Executive - Marcus Vance ($1.38M / FICO 795)</option>
+                    <option value="APP-SELFEMP-2026">Self-Employed Condo - Sophia Morales ($600k / FICO 730)</option>
+                    <option value="APP-ELEVATED-RISK">Elevated Risk Audit - David Sterling ($395k / FICO 605)</option>
+                </select>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator-chip" id="connectionStatusChip">
+                <span class="pulse-dot active"></span>
+                <span class="status-text" id="statusLabel">Agent Engine Ready</span>
+            </div>
+            <button id="customAppBtn" class="btn-secondary">
+                <span class="btn-icon">✏️</span> Custom Loan Input
+            </button>
+            <button id="runPipelineBtn" class="btn-primary glow-button">
+                <span class="btn-icon">▶</span> Run Underwriting Pipeline
+            </button>
+        </div>
+    </header>
+
+    <!-- CUSTOM APPLICATION MODAL -->
+    <div id="customAppModal" class="modal-backdrop" style="display: none;">
+        <div class="modal-window glassmorphism">
+            <div class="modal-header">
+                <h3>Custom Loan Application Intake</h3>
+                <button id="closeModalBtn" class="btn-close">✕</button>
+            </div>
+            <form id="customAppForm" class="modal-form">
+                <div class="form-section-title">Borrower Profile</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Legal Name</label>
+                        <input type="text" id="custName" value="Jordan Hayes" required>
+                    </div>
+                    <div class="form-group">
+                        <label>FICO Credit Score (300-850)</label>
+                        <input type="number" id="custFico" value="745" min="300" max="850" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Gross Income ($)</label>
+                        <input type="number" id="custIncome" value="14500" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Non-Housing Debts ($)</label>
+                        <input type="number" id="custDebts" value="650" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Liquid Reserves ($)</label>
+                        <input type="number" id="custReserves" value="75000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Employment Type</label>
+                        <select id="custEmpType">
+                            <option value="W2_EMPLOYED">W-2 Employed</option>
+                            <option value="SELF_EMPLOYED">Self-Employed</option>
+                            <option value="1099_CONTRACTOR">1099 Contractor</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section-title">Collateral & Loan Terms</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Property Address</label>
+                        <input type="text" id="custAddress" value="550 Market St, San Francisco, CA" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Purchase Price ($)</label>
+                        <input type="number" id="custPrice" value="850000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Appraised Value ($)</label>
+                        <input type="number" id="custAppraisal" value="865000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Requested Loan Amount ($)</label>
+                        <input type="number" id="custLoanAmt" value="680000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Loan Type</label>
+                        <select id="custLoanType">
+                            <option value="CONVENTIONAL">Conventional Conforming</option>
+                            <option value="JUMBO">Jumbo</option>
+                            <option value="FHA">FHA Government</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Base Interest Rate (%)</label>
+                        <input type="number" id="custRate" value="6.75" step="0.125" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="cancelModalBtn" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Apply & Start Underwriting</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN PLATFORM GRID -->
+    <main class="platform-layout">
+        <!-- LEFT SIDEBAR: AGENT MESH TOPOLOGY & AGENT STATE -->
+        <aside class="topology-sidebar glassmorphism">
+            <div class="sidebar-header">
+                <h3>Multi-Agent Mesh Topology</h3>
+                <span class="sub-label">Hub-and-Spoke Routing</span>
+            </div>
+
+            <!-- MESH NODE VISUALIZER -->
+            <div class="mesh-network-container" id="meshTopologyPanel">
+                <div class="agent-node orchestrator" id="node-underwriting_orchestrator">
+                    <div class="node-icon">👑</div>
+                    <div class="node-info">
+                        <strong>Lead Orchestrator</strong>
+                        <span class="node-subname">underwriting_orchestrator</span>
+                        <span class="node-io-snippet" id="io-underwriting_orchestrator">Role: FCoT Multi-Scale Coordinator</span>
+                    </div>
+                    <span class="node-status" id="status-underwriting_orchestrator">STANDBY</span>
+                </div>
+
+                <div class="mesh-connector-lines">
+                    <div class="line l1"></div>
+                    <div class="line l2"></div>
+                    <div class="line l3"></div>
+                    <div class="line l4"></div>
+                </div>
+
+                <div class="subagent-nodes-grid">
+                    <div class="agent-node worker" id="node-credit_analyst_agent">
+                        <div class="node-icon">💳</div>
+                        <div class="node-info">
+                            <strong>Credit Analyst</strong>
+                            <span class="node-subname">credit_analyst_agent</span>
+                            <span class="node-io-snippet" id="io-credit_analyst_agent">Awaiting Bureau & Tradelines</span>
+                        </div>
+                        <span class="node-status" id="status-credit_analyst_agent">IDLE</span>
+                    </div>
+
+                    <div class="agent-node worker" id="node-income_employment_agent">
+                        <div class="node-icon">📊</div>
+                        <div class="node-info">
+                            <strong>Income & DTI</strong>
+                            <span class="node-subname">income_employment_agent</span>
+                            <span class="node-io-snippet" id="io-income_employment_agent">Awaiting VOE & DTI Capacity</span>
+                        </div>
+                        <span class="node-status" id="status-income_employment_agent">IDLE</span>
+                    </div>
+
+                    <div class="agent-node worker" id="node-collateral_valuation_agent">
+                        <div class="node-icon">🏡</div>
+                        <div class="node-info">
+                            <strong>Collateral & LTV</strong>
+                            <span class="node-subname">collateral_valuation_agent</span>
+                            <span class="node-io-snippet" id="io-collateral_valuation_agent">Awaiting Appraisal & LTV Basis</span>
+                        </div>
+                        <span class="node-status" id="status-collateral_valuation_agent">IDLE</span>
+                    </div>
+
+                    <div class="agent-node worker" id="node-compliance_fraud_agent">
+                        <div class="node-icon">🛡️</div>
+                        <div class="node-info">
+                            <strong>Compliance & KYC</strong>
+                            <span class="node-subname">compliance_fraud_agent</span>
+                            <span class="node-io-snippet" id="io-compliance_fraud_agent">Awaiting OFAC & Fraud Screen</span>
+                        </div>
+                        <span class="node-status" id="status-compliance_fraud_agent">IDLE</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APPLICANT METRIC QUICK GLANCE -->
+            <div class="applicant-quick-glance glassmorphism-inset" id="quickGlancePanel">
+                <h4>Active Loan Parameters</h4>
+                <div class="quick-metric-row">
+                    <span>Borrower:</span>
+                    <strong id="qBorrowerName">Elena Rostova</strong>
+                </div>
+                <div class="quick-metric-row">
+                    <span>Loan Requested:</span>
+                    <strong id="qLoanAmount">$544,000</strong>
+                </div>
+                <div class="quick-metric-row">
+                    <span>Property:</span>
+                    <strong id="qPropertyAddress">1204 Barton Springs Rd, Austin TX</strong>
+                </div>
+                <div class="quick-metric-row">
+                    <span>Stated Income:</span>
+                    <strong id="qStatedIncome">$16,500 / mo</strong>
+                </div>
+                <div class="quick-metric-row">
+                    <span>FICO Score:</span>
+                    <strong id="qCreditScore" class="highlight-green">765 (Prime+)</strong>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER AREA: STREAM TELEMETRY TERMINAL & DYNAMIC A2UI PRESENTATION -->
+        <section class="main-workspace">
+            <!-- UPPER WORKSPACE: DYNAMIC A2UI CONTAINER -->
+            <div class="a2ui-canvas-container" id="a2uiCanvas">
+                <div class="a2ui-placeholder-notice" id="canvasPlaceholder">
+                    <div class="placeholder-icon">📋</div>
+                    <h3>Underwriting Dossier Canvas</h3>
+                    <p>Select a scenario above and click <strong>Run Underwriting Pipeline</strong> to stream real-time subagent evaluation telemetry and instantiate dynamic A2UI components.</p>
+                </div>
+            </div>
+
+            <!-- LOWER WORKSPACE: REAL-TIME MULTI-AGENT EXECUTION STREAM -->
+            <div class="telemetry-terminal-container glassmorphism">
+                <div class="terminal-header">
+                    <div class="terminal-title">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                        <span class="terminal-name">Multi-Agent Event Wiretap & JSON-RPC Stream</span>
+                    </div>
+                    <div class="terminal-actions">
+                        <button id="clearTerminalBtn" class="btn-tiny">Clear Log</button>
+                    </div>
+                </div>
+                <div class="terminal-body" id="chatTerminal">
+                    <div class="terminal-welcome-msg">
+                        <span class="timestamp">[SYSTEM READY]</span> Connected to Google Cloud Agent Engine. Awaiting trigger...
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FLOATING TOAST NOTIFICATION -->
+    <div id="toastNotification" class="toast-container"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
