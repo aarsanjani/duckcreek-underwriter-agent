@@ -118,6 +118,42 @@ sequenceDiagram
 
 ---
 
+### 3. Fractal Chain of Thought (FCoT) 3-Scale Decomposition Engine
+
+```mermaid
+graph TD
+    subgraph FCoT_Engine [Lead Underwriting Orchestrator - Fractal Chain of Thought Engine]
+        subgraph Macro_Aperture [Macro Aperture: Systemic & Capital Markets]
+            M1[SOFR Benchmark Yields & Rate Trends]
+            M2[Secondary Securitization Standards: Fannie/Freddie/SBA]
+            M3[Systemic Regulatory Constraints: ECOA, HMDA, TRID]
+        end
+
+        subgraph Meso_Aperture [Meso Aperture: Regional Cluster & Sector Risk]
+            E1[Regional Housing Market Absorption Velocity]
+            E2[Localized Employment Sector Stability & Tech Volatility]
+            E3[Property Condition Rating C1-C6 & Flood Hazard Zone]
+        end
+
+        subgraph Micro_Aperture [Micro Aperture: Deterministic Applicant Financials]
+            D1[Credit Pillar: Tri-Merge FICO & Revolving Utilization]
+            D2[Capacity Pillar: Front-End 28.4% / Back-End 34.2% DTI]
+            D3[Collateral Pillar: 78.3% LTV & Equity Cushion]
+            D4[Compliance Pillar: OFAC Screening & CIP Verification]
+        end
+    end
+
+    Macro_Aperture --> Meso_Aperture
+    Meso_Aperture --> Micro_Aperture
+
+    Micro_Aperture --> Decision[Underwriting Decision: APPROVED_WITH_CONDITIONS]
+    Decision --> Pricing[Risk-Based Pricing & LLPA: 6.625% Note Rate]
+    Decision --> Stipulations[Dual-Track Validation: PTD & PTF Condition Checklist]
+    Decision --> A2UI_Render[Dynamic A2UI Tabs & Metric Matrix Delivery]
+```
+
+---
+
 ## 🤖 Specialist Underwriting Subagents
 
 | Subagent | Role & Objective | Tools & Capabilities | Isolation Policy |
